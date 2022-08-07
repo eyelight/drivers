@@ -301,6 +301,6 @@ func (b *SPIBus) tx(data []byte, isCommand bool) {
 }
 
 // Size returns the current size of the display.
-func (d *Device) Size() (w, h int16) {
+func (d *Device) Size() (x, y int16) {
 	return d.width, d.height
 }
