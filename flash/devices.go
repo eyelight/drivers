@@ -82,6 +82,7 @@ var DefaultDeviceIdentifier = DeviceIdentifierFunc(func(id JedecID) Attrs {
 func MT25QL02GCBB() Attrs {
 	return Attrs{
 		TotalSize:           1 << 28, // 256 MiB / 2Gb
+		StartUp:             300 * time.Microsecond,
 		JedecID:             JedecID{0x20, 0xBA, 0x22},
 		MaxClockSpeedMHz:    133,
 		QuadEnableBitMask:   0x35,
@@ -99,6 +100,7 @@ func MT25QL02GCBB() Attrs {
 func MT25QL01GBBB() Attrs {
 	return Attrs{
 		TotalSize:           1 << 27, // 128 MiB / 1Gb
+		StartUp:             300 * time.Microsecond,
 		JedecID:             JedecID{0x20, 0xBA, 0x21},
 		MaxClockSpeedMHz:    133,
 		QuadEnableBitMask:   0x35,
