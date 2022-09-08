@@ -72,12 +72,32 @@ var DefaultDeviceIdentifier = DeviceIdentifierFunc(func(id JedecID) Attrs {
 		return MT25QL02GCBB()
 	case 0x20BB21:
 		return MT25QL01GBBB()
+	case 0x9FAB90:
+		return MX66L2G45G()
 	default:
 		return Attrs{JedecID: id}
 	}
 })
 
-// Settings for the Micron MT25QL02GCBB 3v 2GiB SPI flash.
+// Settings for the Macronix MX66L2G45G 3v 2Gb SPI flash.
+// Datasheet: https://www.macronix.com/Lists/Datasheet/Attachments/8697/MX66L2G45G,%203V,%202Gb,%20v1.0.pdf
+func MX66L2G45G() Attrs {
+	return Attrs{
+		TotalSize:           1 << 28, // 256MiB // 2Gb
+		StartUp:             1500 * time.Microsecond,
+		JedecID:             JedecID{0x9F, 0xAB, 0x90},
+		MaxClockSpeedMHz:    166,
+		QuadEnableBitMask:   0x01,
+		HasSectorProtection: true,
+		SupportsFastRead:    true,
+		SupportsQSPI:        true,
+		SupportsQSPIWrites:  true,
+		WriteStatusSplit:    false,
+		SingleStatusByte:    false,
+	}
+}
+
+// Settings for the Micron MT25QL02GCBB 3v 2Gb SPI flash.
 // Datasheet: https://media-www.micron.com/-/media/client/global/documents/products/data-sheet/nor-flash/serial-nor/mt25q/die-rev-b/mt25q_qlkt_l_02g_cbb_0.pdf?rev=43f7f66fc8da4d7d901b35fa51284c8f
 func MT25QL02GCBB() Attrs {
 	return Attrs{
@@ -95,7 +115,7 @@ func MT25QL02GCBB() Attrs {
 	}
 }
 
-// Settings for the Micron MT25QL01GbBB 3v 1GiB SPI flash.
+// Settings for the Micron MT25QL01GbBB 3v 1Gb SPI flash.
 // Datasheet: https://media-www.micron.com/-/media/client/global/documents/products/data-sheet/nor-flash/serial-nor/mt25q/die-rev-b/mt25q_qlkt_l_01g_bbb_0.pdf?rev=43d124f03bbf4ef0962435e9ec63a185
 func MT25QL01GBBB() Attrs {
 	return Attrs{
