@@ -68,10 +68,48 @@ var DefaultDeviceIdentifier = DeviceIdentifierFunc(func(id JedecID) Attrs {
 		return W25Q64JVIM()
 	case 0xEF7018:
 		return W25Q128JVPM()
+	case 0x20BA22:
+		return MT25QL02GCBB()
+	case 0x20BB21:
+		return MT25QL01GBBB()
 	default:
 		return Attrs{JedecID: id}
 	}
 })
+
+// Settings for the Micron MT25QL02GCBB 3v 2GiB SPI flash.
+// Datasheet: https://media-www.micron.com/-/media/client/global/documents/products/data-sheet/nor-flash/serial-nor/mt25q/die-rev-b/mt25q_qlkt_l_02g_cbb_0.pdf?rev=43f7f66fc8da4d7d901b35fa51284c8f
+func MT25QL02GCBB() Attrs {
+	return Attrs{
+		TotalSize:           1 << 28, // 256 MiB / 2Gb
+		JedecID:             JedecID{0x20, 0xBA, 0x22},
+		MaxClockSpeedMHz:    133,
+		QuadEnableBitMask:   0x35,
+		HasSectorProtection: true,
+		SupportsFastRead:    true,
+		SupportsQSPI:        true,
+		SupportsQSPIWrites:  true,
+		WriteStatusSplit:    false,
+		SingleStatusByte:    false,
+	}
+}
+
+// Settings for the Micron MT25QL01GbBB 3v 1GiB SPI flash.
+// Datasheet: https://media-www.micron.com/-/media/client/global/documents/products/data-sheet/nor-flash/serial-nor/mt25q/die-rev-b/mt25q_qlkt_l_01g_bbb_0.pdf?rev=43d124f03bbf4ef0962435e9ec63a185
+func MT25QL01GBBB() Attrs {
+	return Attrs{
+		TotalSize:           1 << 27, // 128 MiB / 1Gb
+		JedecID:             JedecID{0x20, 0xBA, 0x21},
+		MaxClockSpeedMHz:    133,
+		QuadEnableBitMask:   0x35,
+		HasSectorProtection: true,
+		SupportsFastRead:    true,
+		SupportsQSPI:        true,
+		SupportsQSPIWrites:  true,
+		WriteStatusSplit:    false,
+		SingleStatusByte:    false,
+	}
+}
 
 // Settings for the Cypress (was Spansion) S25FL064L 8MiB SPI flash.
 // Datasheet: http://www.cypress.com/file/316661/download
