@@ -7,19 +7,20 @@ import (
 	"time"
 
 	"tinygo.org/x/drivers/net/http"
+	"tinygo.org/x/drivers/rtl8720dn"
 )
 
 // You can override the setting with the init() in another source code.
 // func init() {
 //    ssid = "your-ssid"
-//    password = "your-password"
+//    pass = "your-password"
 //    debug = true
 // }
 
 var (
-	ssid     string
-	password string
-	debug    = false
+	ssid  string
+	pass  string
+	debug = false
 )
 
 var led = machine.LED
@@ -37,18 +38,18 @@ func main() {
 }
 
 func run() error {
-	rtl, err := setupRTL8720DN()
+	adaptor := rtl8720dn.New(machine.UART3, machine.PB24, machine.PC24, machine.RTL8720D_CHIP_PU)
+	adaptor.Debug(debug)
+	adaptor.Configure()
+
+	http.UseDriver(adaptor)
+
+	err := adaptor.ConnectToAccessPoint(ssid, pass, 10*time.Second)
 	if err != nil {
 		return err
 	}
-	http.UseDriver(rtl)
 
-	err = rtl.ConnectToAccessPoint(ssid, password, 10*time.Second)
-	if err != nil {
-		return err
-	}
-
-	ip, subnet, gateway, err := rtl.GetIP()
+	ip, subnet, gateway, err := adaptor.GetIP()
 	if err != nil {
 		return err
 	}

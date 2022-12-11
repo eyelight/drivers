@@ -1,14 +1,18 @@
 package main
 
 import (
+	"machine"
+
 	"bufio"
 	"fmt"
 	"image/color"
 	"strings"
 	"time"
 
-	"tinygo.org/x/drivers/net"
+	"tinygo.org/x/drivers/ili9341"
 	"tinygo.org/x/drivers/net/http"
+	"tinygo.org/x/drivers/rtl8720dn"
+
 	"tinygo.org/x/tinyfont/proggy"
 	"tinygo.org/x/tinyterm"
 )
@@ -17,19 +21,28 @@ import (
 // If debug is enabled, a serial connection is required.
 // func init() {
 //    ssid = "your-ssid"
-//    password = "your-password"
+//    pass = "your-password"
 //    debug = false // true
 //    server = "tinygo.org"
 // }
 
 var (
-	ssid     string
-	password string
-	url      = "http://tinygo.org/"
-	debug    = false
+	ssid  string
+	pass  string
+	url   = "http://tinygo.org/"
+	debug = false
 )
 
 var (
+	display = ili9341.NewSPI(
+		machine.SPI3,
+		machine.LCD_DC,
+		machine.LCD_SS_PIN,
+		machine.LCD_RESET,
+	)
+
+	backlight = machine.LCD_BACKLIGHT
+
 	terminal = tinyterm.NewTerminal(display)
 
 	black = color.RGBA{0, 0, 0, 255}
@@ -66,21 +79,22 @@ func run() error {
 		fmt.Fprintf(terminal, "Running in debug mode.\r\n")
 		fmt.Fprintf(terminal, "A serial connection is required to continue execution.\r\n")
 	}
-	rtl, err := setupRTL8720DN()
-	if err != nil {
-		return err
-	}
-	net.UseDriver(rtl)
+
+	adaptor := rtl8720dn.New(machine.UART3, machine.PB24, machine.PC24, machine.RTL8720D_CHIP_PU)
+	adaptor.Debug(debug)
+	adaptor.Configure()
+
+	http.UseDriver(adaptor)
 	http.SetBuf(buf[:])
 
 	fmt.Fprintf(terminal, "ConnectToAP()\r\n")
-	err = rtl.ConnectToAccessPoint(ssid, password, 10*time.Second)
+	err := adaptor.ConnectToAccessPoint(ssid, pass, 10*time.Second)
 	if err != nil {
 		return err
 	}
 	fmt.Fprintf(terminal, "connected\r\n\r\n")
 
-	ip, subnet, gateway, err := rtl.GetIP()
+	ip, subnet, gateway, err := adaptor.GetIP()
 	if err != nil {
 		return err
 	}
@@ -133,4 +147,16 @@ func run() error {
 		fmt.Fprintf(terminal, "-------- %d --------\r\n", cnt)
 		time.Sleep(10 * time.Second)
 	}
+}
+
+func init() {
+	machine.SPI3.Configure(machine.SPIConfig{
+		SCK:       machine.LCD_SCK_PIN,
+		SDO:       machine.LCD_SDO_PIN,
+		SDI:       machine.LCD_SDI_PIN,
+		Frequency: 40000000,
+	})
+	display.Configure(ili9341.Config{})
+
+	backlight.Configure(machine.PinConfig{machine.PinOutput})
 }

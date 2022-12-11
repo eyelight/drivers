@@ -1,3 +1,68 @@
+0.23.0
+---
+- **new devices**
+    - Add GC9A01 Driver (#452)
+    - Initial support for VL6180x sensor
+
+- **enhancements**
+    - **rtl8720dn**
+        - refactor by bringing this driver more in line with wifinina and espat
+    - **ssd1306**
+        - add getter method to the current buffer
+    - **makeybutton**
+        - revise to better match the algorithm defined by the original
+    - **espat,wifinina,rtl8720dn**
+        - change ssid/pass from const to var
+
+- **bugfixes**
+    - **microbitmatrix**
+        - fix inverted axis
+    - **espat**
+        - Trim quotes from IP returned by espat's GetDNS()
+    - **all**
+        - correct go fmt
+
+- **examples**
+    - **rtl8720dn**
+        - remove wifi setting
+        - add call to optional debug setting
+        - update all remaining examples for refactored API
+
+
+0.22.0
+---
+- **new devices**
+    - epd: add waveshare 2.9in (v1)
+    - makeybutton: add driver for MakeyMakey-like button
+
+- **enhancements**
+    - **rtl8720dn**
+        - add UDP close function
+        - improve error handling
+    - **net/http**
+        - improve header parsing
+        - add last-will-and-testament to MQTT
+    - **net/mqtt**
+        - adds keepalive pinging, disconnect, and graceful goroutine cleanup
+        - support for cookies when https
+        - add support for retained messsages
+
+- **bugfixes**
+    - irremote: Fix irremote reporting incorrect NEC addresses and command codes (#422)
+    - net/http:  Fix http.Get() with port specification
+
+- **build**
+    - Makefile recursively finds unit-tests
+    - switching to GHA
+
+- **updates**
+    - update tinyfont to v0.3.0
+    - update tinyfs to v0.2.0
+
+- **examples**
+    - rtl8720dn: add ./examples/rtl8720dn/version
+
+
 0.21.0
 ---
 - **new devices**

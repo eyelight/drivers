@@ -1,6 +1,8 @@
 package main
 
 import (
+	"machine"
+
 	"bufio"
 	"fmt"
 	"strings"
@@ -14,17 +16,17 @@ import (
 // You can override the setting with the init() in another source code.
 // func init() {
 //    ssid = "your-ssid"
-//    password = "your-password"
+//    pass = "your-password"
 //    debug = true
 //    url = "https://www.example.com"
 //    test_root_ca = "..."
 // }
 
 var (
-	ssid     string
-	password string
-	url      string = "https://www.example.com"
-	debug           = false
+	ssid  string
+	pass  string
+	url   string = "https://www.example.com"
+	debug        = false
 )
 
 // Set the test_root_ca created by the following command
@@ -57,7 +59,6 @@ var buf [0x1000]byte
 
 var lastRequestTime time.Time
 var conn net.Conn
-var adaptor *rtl8720dn.RTL8720DN
 
 func main() {
 	err := run()
@@ -68,20 +69,19 @@ func main() {
 }
 
 func run() error {
-	rtl, err := setupRTL8720DN()
-	if err != nil {
-		return err
-	}
-	rtl.SetRootCA(&test_root_ca)
-	net.UseDriver(rtl)
+	adaptor := rtl8720dn.New(machine.UART3, machine.PB24, machine.PC24, machine.RTL8720D_CHIP_PU)
+	adaptor.Debug(debug)
+	adaptor.Configure()
+
+	adaptor.SetRootCA(&test_root_ca)
 	http.SetBuf(buf[:])
 
-	err = rtl.ConnectToAccessPoint(ssid, password, 10*time.Second)
+	err := adaptor.ConnectToAccessPoint(ssid, pass, 10*time.Second)
 	if err != nil {
 		return err
 	}
 
-	ip, subnet, gateway, err := rtl.GetIP()
+	ip, subnet, gateway, err := adaptor.GetIP()
 	if err != nil {
 		return err
 	}

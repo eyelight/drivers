@@ -4,28 +4,31 @@
 package main
 
 import (
+	"machine"
+
 	"errors"
 	"fmt"
 	"runtime"
 	"time"
 
 	"tinygo.org/x/drivers/net"
+	"tinygo.org/x/drivers/rtl8720dn"
 )
 
 // IP address of the server aka "hub". Replace with your own info.
 // You can override the setting with the init() in another source code.
 // func init() {
 //    ssid = "your-ssid"
-//    password = "your-password"
+//    pass = "your-password"
 //    ntpHost = "129.6.15.29"
 //    debug = true
 // }
 
 var (
-	ssid     string
-	password string
-	ntpHost  = "129.6.15.29"
-	debug    = false
+	ssid    string
+	pass    string
+	ntpHost = "129.6.15.29"
+	debug   = false
 )
 
 const NTP_PACKET_SIZE = 48
@@ -41,18 +44,16 @@ func main() {
 }
 
 func run() error {
-	rtl, err := setupRTL8720DN()
-	if err != nil {
-		return err
-	}
-	net.UseDriver(rtl)
+	adaptor := rtl8720dn.New(machine.UART3, machine.PB24, machine.PC24, machine.RTL8720D_CHIP_PU)
+	adaptor.Debug(debug)
+	adaptor.Configure()
 
-	err = rtl.ConnectToAccessPoint(ssid, password, 10*time.Second)
+	err := adaptor.ConnectToAccessPoint(ssid, pass, 10*time.Second)
 	if err != nil {
 		return err
 	}
 
-	ip, subnet, gateway, err := rtl.GetIP()
+	ip, subnet, gateway, err := adaptor.GetIP()
 	if err != nil {
 		return err
 	}

@@ -20,6 +20,11 @@ func SetBuf(b []byte) {
 }
 
 func (c *Client) Do(req *Request) (*Response, error) {
+	if c.Jar != nil {
+		for _, cookie := range c.Jar.Cookies(req.URL) {
+			req.AddCookie(cookie)
+		}
+	}
 	switch req.URL.Scheme {
 	case "http":
 		return c.doHTTP(req)
@@ -31,15 +36,17 @@ func (c *Client) Do(req *Request) (*Response, error) {
 }
 
 func (c *Client) doHTTP(req *Request) (*Response, error) {
-	if c.Jar != nil {
-		for _, cookie := range c.Jar.Cookies(req.URL) {
-			req.AddCookie(cookie)
-		}
-	}
-
 	// make TCP connection
-	ip := net.ParseIP(req.URL.Host)
-	raddr := &net.TCPAddr{IP: ip, Port: 80}
+	ip := net.ParseIP(req.URL.Hostname())
+	port := 80
+	if req.URL.Port() != "" {
+		p, err := strconv.ParseUint(req.URL.Port(), 0, 64)
+		if err != nil {
+			return nil, err
+		}
+		port = int(p)
+	}
+	raddr := &net.TCPAddr{IP: ip, Port: port}
 	laddr := &net.TCPAddr{Port: 8080}
 
 	conn, err := net.DialTCP("tcp", laddr, raddr)
@@ -178,12 +185,17 @@ func (c *Client) doResp(conn net.Conn, req *Request) (*Response, error) {
 			if err != nil {
 				println("Read error: " + err.Error())
 			} else {
-				idx := bytes.Index(buf[ofs:ofs+n], []byte("\r\n\r\n"))
+				// Take care of the case where "\r\n\r\n" is on the boundary of a buffer
+				start := ofs
+				if start > 3 {
+					start -= 3
+				}
+				idx := bytes.Index(buf[start:ofs+n], []byte("\r\n\r\n"))
 				if idx == -1 {
 					ofs += n
 					continue
 				}
-				idx += ofs + 4
+				idx += start + 4
 
 				scanner = bufio.NewScanner(bytes.NewReader(buf[0 : ofs+n]))
 				if resp.Status == "" && scanner.Scan() {
@@ -261,6 +273,9 @@ func (c *Client) doResp(conn net.Conn, req *Request) (*Response, error) {
 				return nil, fmt.Errorf("slice out of range : use http.SetBuf() to change the allocation to %d bytes or more", end)
 			}
 			n, err := conn.Read(buf[ofs : ofs+0x400])
+			if err != nil {
+				return nil, err
+			}
 			if n == 0 {
 				continue
 			}
